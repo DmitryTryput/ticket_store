@@ -7,7 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CinemaDao {
 
@@ -26,6 +28,7 @@ public class CinemaDao {
             e.printStackTrace();
         }
     }
+
 
     public List<Cinema> getAll() {
         List<Cinema> cinemas = new ArrayList<>();

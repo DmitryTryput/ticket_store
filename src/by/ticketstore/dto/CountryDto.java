@@ -7,8 +7,9 @@ import lombok.Data;
 public class CountryDto {
 
     private String name;
+    private Long id;
 
-    public CountryDto(String name) {
-        this.name = name;
+    public CountryDto(Long id) {
+        this.id = id;
     }
 }

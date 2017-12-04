@@ -1,11 +1,13 @@
 package by.ticketstore.dao;
 
+import by.ticketstore.dao.connection.ConnectionManager;
 import by.ticketstore.entities.Country;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class CountryDao {
@@ -39,6 +41,23 @@ public class CountryDao {
        } catch (SQLException e) {
            e.printStackTrace();
        }
+    }
+
+    public List<Country> getAll() {
+        List<Country> countries = new ArrayList<>();
+        try (Connection connection = ConnectionManager.getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT * FROM countries")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        countries.add(new Country(resultSet.getLong("id"), resultSet.getString("country_name")));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return countries;
     }
 
     public static CountryDao getInstance() {

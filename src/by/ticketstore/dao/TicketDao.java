@@ -11,17 +11,18 @@ public class TicketDao {
 
     private static TicketDao INSTANCE;
 
-    private TicketDao(){}
+    private TicketDao() {
+    }
 
     public void addTicket(Ticket ticket, Connection connection) {
         try {
             String sql = "INSERT INTO tickets (seance_id, row, seat) VALUES (?,?,?);";
-            PreparedStatement ticketStatement = connection.prepareStatement(sql);
-            ticketStatement.setLong(1, ticket.getSeance().getId());
-            ticketStatement.setLong(2, ticket.getRow());
-            ticketStatement.setLong(3, ticket.getSeat());
-            ticketStatement.executeUpdate();
-            ticketStatement.close();
+            try (PreparedStatement ticketStatement = connection.prepareStatement(sql)) {
+                ticketStatement.setLong(1, ticket.getSeance().getId());
+                ticketStatement.setLong(2, ticket.getRow());
+                ticketStatement.setLong(3, ticket.getSeat());
+                ticketStatement.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

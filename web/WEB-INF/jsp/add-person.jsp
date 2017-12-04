@@ -11,13 +11,29 @@
     <p>Фамилия:</p>
     <input type="text" name="lastName"><br>
     <p>День </p>
-    <input type="number" name="day"><br><br>
+    <select name="day">
+        <c:forEach var="day" items="${requestScope.days}">
+            <option value="${day}">${day}</option>
+        </c:forEach>
+    </select><br><br>
     <p>месяц </p>
-    <input type="number" name="month"><br><br>
+    <select name="month">
+        <c:forEach var="month" items="${requestScope.months}">
+            <option value="${month}">${month}</option>
+        </c:forEach>
+    </select><br><br>
     <p>год </p>
-    <input type="number" name="year"><br><br>
+    <select name="year">
+        <c:forEach var="year" items="${requestScope.years}">
+            <option value="${year}">${year}</option>
+        </c:forEach>
+    </select><br><br>
     <p>страна </p>
-    <input type="text" name="country"><br><br>
+    <select name="countryId">
+        <c:forEach var="country" items="${requestScope.countries}">
+            <option value="${country.id}">${country.name}</option>
+        </c:forEach>
+    </select><br><br>
     <button type="submit">save</button>
 </form>
 </body>

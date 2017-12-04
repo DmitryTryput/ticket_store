@@ -5,6 +5,9 @@
     <title>Add Cinema</title>
 </head>
 <body>
+
+<%@include file="header.jsp"%><br>
+
 <form action="${pageContext.request.contextPath}/add-cinema" method="post">
     <p>Название кинотеатра:</p>
     <input type="text" name="title"><br>

@@ -1,0 +1,22 @@
+use ticket_store;
+
+INSERT into countries (country_name) values ('США');
+INSERT into countries (country_name) values ('Великобритания');
+INSERT into countries (country_name) values ('Россия');
+INSERT into countries (country_name) values ('Беларусь');
+INSERT into countries (country_name) values ('Франция');
+INSERT into countries (country_name) values ('Германия');
+INSERT into countries (country_name) values ('Австрия');
+INSERT into countries (country_name) values ('Швеция');
+INSERT into countries (country_name) values ('Испания');
+INSERT into countries (country_name) values ('Канада');
+INSERT into countries (country_name) values ('Украина');
+INSERT into countries (country_name) values ('Италия');
+INSERT into countries (country_name) values ('Мексика');
+INSERT into countries (country_name) values ('Дания');
+INSERT into countries (country_name) values ('Австралия');
+INSERT into countries (country_name) values ('Турция');
+INSERT into countries (country_name) values ('Япония');
+INSERT into countries (country_name) values ('Бразилия');
+INSERT into countries (country_name) values ('Бельгия');
+INSERT into countries (country_name) values ('Израиль');

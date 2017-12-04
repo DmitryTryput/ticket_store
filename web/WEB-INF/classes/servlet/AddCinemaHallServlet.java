@@ -1,5 +1,8 @@
 package servlet;
 
+import by.ticketstore.dto.CinemaBasicDto;
+import by.ticketstore.dto.CinemaHallDto;
+import by.ticketstore.service.CinemaHallService;
 import by.ticketstore.service.CinemaService;
 
 import javax.servlet.ServletException;
@@ -8,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
 
 import static util.ServletUtil.createViewPath;
 
@@ -25,6 +27,13 @@ public class AddCinemaHallServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
+        String title = req.getParameter("title");
+        Integer rows = Integer.valueOf(req.getParameter("rows"));
+        Integer rowSeats = Integer.valueOf(req.getParameter("row_seats"));
+        Long cinemaId = Long.valueOf(req.getParameter("cinemaId"));
+        CinemaHallDto cinemaHallDto = new CinemaHallDto(title, rows, rowSeats, cinemaId);
+        System.out.println(cinemaHallDto);
+        CinemaHallService cinemaHallService = CinemaHallService.getInstance();
+        cinemaHallService.add(cinemaHallDto);
     }
 }

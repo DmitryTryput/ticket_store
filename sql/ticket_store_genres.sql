@@ -1,0 +1,14 @@
+use ticket_store;
+insert into genres (genres_name) values ('анимационный');
+insert into genres (genres_name) values ('драма');
+insert into genres (genres_name) values ('комедия');
+insert into genres (genres_name) values ('фантастика');
+insert into genres (genres_name) values ('детектив');
+insert into genres (genres_name) values ('боевик');
+insert into genres (genres_name) values ('документальный');
+insert into genres (genres_name) values ('исторический');
+insert into genres (genres_name) values ('ужасы');
+insert into genres (genres_name) values ('триллер');
+insert into genres (genres_name) values ('приключение');
+insert into genres (genres_name) values ('фэнтези');
+insert into genres (genres_name) values ('семейный');

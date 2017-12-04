@@ -1,6 +1,5 @@
 package by.ticketstore.entities;
 
-import by.ticketstore.dto.CinemaBasicDto;
 import lombok.Data;
 
 import java.util.HashSet;
@@ -13,7 +12,23 @@ public class CinemaHall {
     private String title;
     private Integer rows;
     private Integer seats;
-    private CinemaBasicDto cinema;
+    private Long cinemaId;
+    private Cinema cinema;
     private Set<Seance> seances = new HashSet<>();
 
+    public CinemaHall(String title, Integer rows, Integer seats, Long cinemaId) {
+        this.title = title;
+        this.rows = rows;
+        this.seats = seats;
+        this.cinemaId = cinemaId;
+    }
+
+    public CinemaHall(Long id) {
+        this.id = id;
+    }
+
+    public CinemaHall(Long id, String title) {
+        this.id = id;
+        this.title = title;
+    }
 }
