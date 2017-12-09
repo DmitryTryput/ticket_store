@@ -26,8 +26,14 @@ public class AddCinemaServlet  extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        CinemaBasicDto cinema = new CinemaBasicDto(req.getParameter("title"));
+           String title = req.getParameter("title");
+        if(!title.equals("")) {
+           CinemaBasicDto cinema = new CinemaBasicDto(title);
         CinemaService cinemaService = CinemaService.getInstance();
         cinemaService.add(cinema);
+            resp.sendRedirect("upcoming");
+        } else {
+            resp.sendRedirect("add-cinema");
+        }
     }
 }

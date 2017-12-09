@@ -6,12 +6,12 @@
 </head>
 <body>
 
-<%@include file="header.jsp"%><br>
+<%@include file="header.jsp"%>
 
 <form action="${pageContext.request.contextPath}/add-cinema" method="post">
     <p>Название кинотеатра:</p>
-    <input type="text" name="title"><br>
-    <button type="submit">save</button>
+    <input type="text" maxlength="250" name="title"><br>
+    <button type="submit">Сохранить</button>
 </form>
 </body>
 </html>

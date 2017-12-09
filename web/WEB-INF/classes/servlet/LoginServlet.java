@@ -28,12 +28,7 @@ public class LoginServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         try {
-            LoginUserDto loginUserDto = UserService.getInstance().loginUser(new LoginUserDto(email, password));
-            HttpSession session = req.getSession();
-            session.setAttribute("id", loginUserDto.getId());
-            session.setAttribute("firstName", loginUserDto.getFirstName());
-            session.setAttribute("lastName", loginUserDto.getLastName());
-            session.setAttribute("value", loginUserDto.getValue());
+            authentication(req, email, password);
             resp.sendRedirect("upcoming");
         } catch (IllegalArgumentException e) {
             req.setAttribute("result", e.getMessage());
@@ -41,5 +36,15 @@ public class LoginServlet extends HttpServlet {
                     .getRequestDispatcher(createViewPath("login"))
                     .forward(req, resp);
         }
+    }
+
+    private void authentication(HttpServletRequest req, String email, String password) {
+        LoginUserDto loginUserDto = UserService.getInstance().loginUser(new LoginUserDto(email, password));
+        HttpSession session = req.getSession();
+        session.setAttribute("id", loginUserDto.getId());
+        session.setAttribute("firstName", loginUserDto.getFirstName());
+        session.setAttribute("lastName", loginUserDto.getLastName());
+        session.setAttribute("value", loginUserDto.getValue());
+        session.setAttribute("role", loginUserDto.getRole());
     }
 }

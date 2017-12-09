@@ -1,6 +1,5 @@
 package servlet;
 
-import by.ticketstore.dto.CinemaBasicDto;
 import by.ticketstore.dto.CinemaHallDto;
 import by.ticketstore.service.CinemaHallService;
 import by.ticketstore.service.CinemaService;
@@ -28,12 +27,21 @@ public class AddCinemaHallServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String title = req.getParameter("title");
-        Integer rows = Integer.valueOf(req.getParameter("rows"));
-        Integer rowSeats = Integer.valueOf(req.getParameter("row_seats"));
-        Long cinemaId = Long.valueOf(req.getParameter("cinemaId"));
-        CinemaHallDto cinemaHallDto = new CinemaHallDto(title, rows, rowSeats, cinemaId);
-        System.out.println(cinemaHallDto);
-        CinemaHallService cinemaHallService = CinemaHallService.getInstance();
-        cinemaHallService.add(cinemaHallDto);
+        String rowString = req.getParameter("rows");
+        String stringSeats = req.getParameter("row_seats");
+        if (isInput(title, rowString, stringSeats)) {
+            Integer rows = Integer.valueOf(rowString);
+            Integer rowSeats = Integer.valueOf(stringSeats);
+            Long cinemaId = Long.valueOf(req.getParameter("cinemaId"));
+            CinemaHallDto cinemaHallDto = new CinemaHallDto(title, rows, rowSeats, cinemaId);
+            CinemaHallService.getInstance().add(cinemaHallDto);
+            resp.sendRedirect("upcoming");
+        } else {
+            resp.sendRedirect("add-cinemahall");
+        }
+    }
+
+    private boolean isInput(String title, String rowString, String stringSeats) {
+        return !title.equals("") && !rowString.equals("") && !stringSeats.equals("");
     }
 }

@@ -7,14 +7,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static util.ServletUtil.createViewPath;
-
-@WebServlet("/move")
-public class MoveServlet extends HttpServlet {
+@WebServlet("/logged-out")
+public class LoggedOutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        getServletContext()
-                .getRequestDispatcher(createViewPath("move"))
-                .forward(req, resp);
+        req.getSession().invalidate();
+        resp.sendRedirect("login");
     }
 }

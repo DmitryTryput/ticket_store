@@ -18,7 +18,7 @@ public class MovieService {
     private MovieService() {
     }
 
-    public void add(MovieAddDto movieDto) {
+    public Long add(MovieAddDto movieDto) {
         Movie movie = new Movie(movieDto.getTitle(), movieDto.getCreateDate(),
                 new Country(movieDto.getCountry().getId()), new Person(movieDto.getDirector().getId()));
         for (PersonBasicDto person : movieDto.getActors()) {
@@ -27,7 +27,7 @@ public class MovieService {
         for (GenreInfoDto genre : movieDto.getGenres()) {
             movie.getGenres().add(new Genre(genre.getId()));
         }
-        MovieDao.getInstance().addMovie(movie);
+        return MovieDao.getInstance().addMovie(movie);
     }
 
     public List<MovieBaseInfoDto> getAll() {

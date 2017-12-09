@@ -18,9 +18,7 @@ public class AllPersonsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setAttribute("persons", PersonService.getInstance().getAll());
         getServletContext()
-                .getRequestDispatcher(createViewPath("upcoming"))
+                .getRequestDispatcher(createViewPath("persons"))
                 .forward(req, resp);
     }
-
-
 }

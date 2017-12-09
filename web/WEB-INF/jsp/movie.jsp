@@ -7,19 +7,27 @@
 <body>
 <%@include file="header.jsp"%><br>
 
-
-
 <p>Название: ${requestScope.movie.title}</p>
 <p>Год выпуска: ${requestScope.movie.createDate}</p>
 <p>Страна: ${requestScope.movie.country.name}</p>
-<p>Режисер: ${requestScope.movie.director.firstName} ${requestScope.movie.director.lastName}</p>
+<p>Режисер:<a href="${pageContext.request.contextPath}/person?id=${requestScope.movie.director.id}"> ${requestScope.movie.director.firstName} ${requestScope.movie.director.lastName}</a></p>
 <p>Жанры: </p>
 <c:forEach var="genre" items="${requestScope.movie.genres}">
     <p>   ${genre.name}  </p>
 </c:forEach>
 Актеры:
 <c:forEach var="actor" items="${requestScope.movie.actors}">
-    <p>     ${actor.firstName} ${actor.lastName}</p>
+    <p> <a href="${pageContext.request.contextPath}/person?id=${actor.id}">    ${actor.firstName} ${actor.lastName}</a></p>
 </c:forEach>
+Комментарии:
+<c:forEach var="review" items="${requestScope.movie.reviews}">
+    <p> Пользователь:  <a href="${pageContext.request.contextPath}/user-profile?id=${review.user.id}">  ${review.user.firstName} ${review.user.lastName}</a></p>
+    <p>    Отзыв: ${review.text} </p>
+</c:forEach>
+
+<form action="${pageContext.request.contextPath}/add-review?id=${requestScope.id}" method="post">
+    <input type="text" maxlength="250" name="review">
+    <button type="submit">Добавить комментарий</button>
+    </form>
 </body>
 </html>

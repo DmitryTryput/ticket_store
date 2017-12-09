@@ -2,15 +2,16 @@ package by.ticketstore.dao;
 
 import by.ticketstore.dao.connection.ConnectionManager;
 import by.ticketstore.entities.Country;
-import by.ticketstore.entities.Movie;
 import by.ticketstore.entities.Genre;
+import by.ticketstore.entities.Movie;
 import by.ticketstore.entities.Person;
+import by.ticketstore.entities.Review;
+import by.ticketstore.entities.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,46 +24,48 @@ public class MovieDao {
     private MovieDao() {
     }
 
-    public void addMovie(Movie movie) {
+    public Long addMovie(Movie movie) {
         Connection connection = null;
         try {
             connection = ConnectionManager.getConnection();
             connection.setAutoCommit(false);
             String movieSql = "INSERT INTO films (title, create_date, country_id) VALUES (?,?,?)";
-            PreparedStatement movieStatement = connection.prepareStatement(movieSql, PreparedStatement.RETURN_GENERATED_KEYS);
-            movieStatement.setString(1, movie.getTitle());
-            movieStatement.setInt(2, movie.getCreateDate().getValue());
-            movieStatement.setLong(3, movie.getCountry().getId());
-            movieStatement.executeUpdate();
-            ResultSet movieResultSet = movieStatement.getGeneratedKeys();
-            if (movieResultSet.next()) {
-                movie.setId(movieResultSet.getLong(1));
+            try (PreparedStatement movieStatement
+                         = connection.prepareStatement(movieSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                movieStatement.setString(1, movie.getTitle());
+                movieStatement.setInt(2, movie.getCreateDate().getValue());
+                movieStatement.setLong(3, movie.getCountry().getId());
+                movieStatement.executeUpdate();
+                try (ResultSet movieResultSet = movieStatement.getGeneratedKeys()) {
+                    if (movieResultSet.next()) {
+                        movie.setId(movieResultSet.getLong(1));
+                    }
+                }
             }
-            movieResultSet.close();
-            movieStatement.close();
             String movieDirectorSql = "INSERT INTO films_directors (film_id, person_id) VALUES (?,?)";
-            PreparedStatement movieDirectorStatement = connection.prepareStatement(movieDirectorSql);
-            movieDirectorStatement.setLong(1, movie.getId());
-            movieDirectorStatement.setLong(2, movie.getDirector().getId());
-            movieDirectorStatement.executeUpdate();
-            movieDirectorStatement.close();
+            try (PreparedStatement movieDirectorStatement = connection.prepareStatement(movieDirectorSql)) {
+                movieDirectorStatement.setLong(1, movie.getId());
+                movieDirectorStatement.setLong(2, movie.getDirector().getId());
+                movieDirectorStatement.executeUpdate();
+            }
             for (Genre genre : movie.getGenres()) {
                 String movieGenresSql = "INSERT INTO films_genres (film_id, genre_id) VALUES (?,?)";
-                PreparedStatement movieGenresStatement = connection.prepareStatement(movieGenresSql);
-                movieGenresStatement.setLong(1, movie.getId());
-                movieGenresStatement.setLong(2, genre.getId());
-                movieGenresStatement.executeUpdate();
-                movieGenresStatement.close();
+                try (PreparedStatement movieGenresStatement = connection.prepareStatement(movieGenresSql)) {
+                    movieGenresStatement.setLong(1, movie.getId());
+                    movieGenresStatement.setLong(2, genre.getId());
+                    movieGenresStatement.executeUpdate();
+                }
             }
             for (Person person : movie.getActors()) {
                 String moviePersonSql = "INSERT INTO films_actors (film_id, person_id) VALUES (?,?)";
-                PreparedStatement moviePersonStatement = connection.prepareStatement(moviePersonSql);
-                moviePersonStatement.setLong(1, movie.getId());
-                moviePersonStatement.setLong(2, person.getId());
-                moviePersonStatement.executeUpdate();
-                moviePersonStatement.close();
+                try (PreparedStatement moviePersonStatement = connection.prepareStatement(moviePersonSql)) {
+                    moviePersonStatement.setLong(1, movie.getId());
+                    moviePersonStatement.setLong(2, person.getId());
+                    moviePersonStatement.executeUpdate();
+                }
             }
             connection.commit();
+            return movie.getId();
         } catch (SQLException e) {
             if (connection != null) {
                 try {
@@ -81,6 +84,7 @@ public class MovieDao {
                 }
             }
         }
+        return null;
     }
 
 
@@ -95,7 +99,9 @@ public class MovieDao {
                             "JOIN persons pr ON fd.person_id = pr.id " +
                             "JOIN films_genres fg ON f.id = fg.film_id " +
                             "JOIN genres g ON fg.genre_id = g.id " +
-                            "WHERE f.id = ?")) {
+                            "LEFT JOIN reviews r ON f.id = r.film_id " +
+                            "LEFT JOIN users u ON r.user_id = u.id " +
+                            "WHERE f.id = ? ORDER BY r.id")) {
                 preparedStatement.setLong(1, id);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
@@ -104,19 +110,11 @@ public class MovieDao {
                         Country country = new Country(resultSet.getLong("c.id"), resultSet.getString("c.country_name"));
                         Person director = new Person(resultSet.getLong("pr.id"), resultSet.getString("pr.first_name"),
                                 resultSet.getString("pr.last_name"));
-                        Person actor = new Person(resultSet.getLong("p.id"), resultSet.getString("p.first_name"),
-                                resultSet.getString("p.last_name"));
-                        Genre genre = new Genre(resultSet.getLong("g.id"), resultSet.getString("g.genres_name"));
                         movie = new Movie(title, createDate, country, director);
-                        movie.getActors().add(actor);
-                        movie.getGenres().add(genre);
+                        addActorsGenresReviews(movie, resultSet);
                     }
                     while (resultSet.next()) {
-                        Person actor = new Person(resultSet.getLong("p.id"), resultSet.getString("p.first_name"),
-                                resultSet.getString("p.last_name"));
-                        Genre genre = new Genre(resultSet.getLong("g.id"), resultSet.getString("g.genres_name"));
-                        movie.getActors().add(actor);
-                        movie.getGenres().add(genre);
+                        addActorsGenresReviews(movie, resultSet);
                     }
                 }
             }
@@ -124,6 +122,17 @@ public class MovieDao {
             e.printStackTrace();
         }
         return movie;
+    }
+
+    private void addActorsGenresReviews(Movie movie, ResultSet resultSet) throws SQLException {
+        Person actor = new Person(resultSet.getLong("p.id"), resultSet.getString("p.first_name"),
+                resultSet.getString("p.last_name"));
+        Review review = new Review(resultSet.getLong("r.id"), resultSet.getString("r.text"),
+                new User(resultSet.getLong("u.id"),resultSet.getString("u.first_name"),resultSet.getString("u.last_name")));
+        Genre genre = new Genre(resultSet.getLong("g.id"), resultSet.getString("g.genres_name"));
+        movie.getReviews().add(review);
+        movie.getActors().add(actor);
+        movie.getGenres().add(genre);
     }
 
     public List<Movie> getAll() {

@@ -5,6 +5,7 @@
     <title>Add CinemaHall</title>
 </head>
 <body>
+<%@include file="header.jsp"%>
 <form action="${pageContext.request.contextPath}/add-cinemahall" method="post">
     <select name="cinemaId">
         <c:forEach var="cinema" items="${requestScope.cinemas}">
@@ -12,12 +13,14 @@
         </c:forEach>
     </select>
     <p>Название зала:</p>
-    <input type="text" name="title" ><br>
+    <input type="text" maxlength="250" name="title" ><br>
     <p>Количетво рядов:</p>
     <input type="number" name="rows" ><br>
     <p>Количество сидений:</p>
     <input type="number" name="row_seats"><br>
-    <button type="submit">save</button>
+    <button type="submit">Сохранить</button>
 </form>
+${result}
+
 </body>
 </html>

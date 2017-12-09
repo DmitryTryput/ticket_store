@@ -1,22 +1,71 @@
 package by.ticketstore.dao;
 
 import by.ticketstore.dao.connection.ConnectionManager;
-import by.ticketstore.entities.*;
+import by.ticketstore.entities.Cinema;
+import by.ticketstore.entities.CinemaHall;
+import by.ticketstore.entities.Movie;
+import by.ticketstore.entities.Seance;
+import by.ticketstore.entities.Ticket;
 
-import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
+
 
 public class SeanceDao {
 
     private static SeanceDao INSTANCE;
 
     private SeanceDao() {
+    }
+
+    public Optional<Seance> buyTickets(Long id) {
+        Seance seance = null;
+        try (Connection connection = ConnectionManager.getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(
+                    getTicketsSql() + "WHERE s.id = ?")) {
+                preparedStatement.setLong(1, id);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        seance = createSeance(resultSet);
+                        addTicket(seance, resultSet);
+                    }
+                    while (resultSet.next()) {
+                        addTicket(seance, resultSet);
+                    }
+                    if (seance != null) {
+                        return Optional.of(seance);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    private void addTicket(Seance seance, ResultSet resultSet) throws SQLException {
+        if (seance.getRowSeatTickets().containsKey(resultSet.getInt("t.row"))) {
+            getTicket(seance, resultSet);
+        } else {
+            seance.getRowSeatTickets().put(resultSet.getInt("t.row"), new HashMap<>());
+            getTicket(seance, resultSet);
+        }
+    }
+
+    private Ticket getTicket(Seance seance, ResultSet resultSet) throws SQLException {
+        return seance.getRowSeatTickets().get(resultSet.getInt("t.row"))
+                .put(resultSet.getInt("t.seat"), new Ticket(resultSet.getLong("t.id"),
+                        resultSet.getInt("t.row"), resultSet.getInt("t.seat"),
+                        resultSet.getBoolean("t.is_purchased")));
     }
 
     public void addSeance(Seance seance) {
@@ -82,7 +131,7 @@ public class SeanceDao {
                     "SELECT * FROM cinemas")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                       cinemas.add(new Cinema(resultSet.getLong("id"),
+                        cinemas.add(new Cinema(resultSet.getLong("id"),
                                 resultSet.getString("title")));
                     }
                 }
@@ -103,17 +152,10 @@ public class SeanceDao {
                             "SELECT * FROM seances s JOIN films f ON s.film_id = f.id " +
                                     "WHERE s.seance_date >= ? AND s.cinema_hall_id = ?")) {
                         preparedStatement.setObject(1, LocalDate.now());
-
                         preparedStatement.setLong(2, cinemaHall.getId());
                         try (ResultSet resultSet = preparedStatement.executeQuery()) {
                             while (resultSet.next()) {
-                                Movie movie = new Movie(resultSet.getLong("f.id"),
-                                        resultSet.getString("f.title"));
-                                LocalDate date = resultSet.getDate("s.seance_date").toLocalDate();
-                                LocalTime time = resultSet.getTime("s.seance_time").toLocalTime();
-                                Seance seance = new Seance(resultSet.getLong("s.id"),
-                                        movie, date, time, resultSet.getBigDecimal("s.price"));
-                                cinemaHall.getSeances().add(seance);
+                                getUpcomingSeances(cinemaHall, resultSet);
                             }
                         }
                     }
@@ -123,6 +165,38 @@ public class SeanceDao {
             e.printStackTrace();
         }
         return cinemas;
+    }
+
+    private void getUpcomingSeances(CinemaHall cinemaHall, ResultSet resultSet) throws SQLException {
+        Movie movie = new Movie(resultSet.getLong("f.id"),
+                resultSet.getString("f.title"));
+        LocalDate date = resultSet.getDate("s.seance_date").toLocalDate();
+        LocalTime time = resultSet.getTime("s.seance_time").toLocalTime();
+        Seance seance = new Seance(resultSet.getLong("s.id"),
+                movie, date, time, resultSet.getBigDecimal("s.price"));
+        cinemaHall.getSeances().add(seance);
+    }
+
+    private Seance createSeance(ResultSet resultSet) throws SQLException {
+        LocalDate localDate = resultSet.getObject("s.seance_date", LocalDate.class);
+        LocalTime localTime = resultSet.getObject("s.seance_time", LocalTime.class);
+        Seance seance = new Seance(resultSet.getLong("s.id"),
+                new Movie(resultSet.getLong("f.id"), resultSet.getString("f.title")),
+                localDate, localTime, resultSet.getBigDecimal("s.price"));
+        seance.setCinemaHall(new CinemaHall(resultSet.getLong("ch.id"),
+                resultSet.getString("ch.title")));
+        seance.getCinemaHall().setSeats(resultSet.getInt("ch.row_seats"));
+        seance.getCinemaHall().setRows(resultSet.getInt("ch.hall_rows"));
+        seance.getCinemaHall().setCinema(new Cinema(resultSet.getLong("c.id"),
+                resultSet.getString("c.title")));
+        return seance;
+    }
+
+    private String getTicketsSql() {
+        return "SELECT * FROM seances s JOIN tickets t ON s.id = t.seance_id " +
+                "JOIN films f ON s.film_id = f.id " +
+                "JOIN cinema_halls ch ON s.cinema_hall_id = ch.id " +
+                "JOIN cinemas c ON ch.cinema_id = c.id ";
     }
 
     public static SeanceDao getInstance() {

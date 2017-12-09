@@ -13,14 +13,16 @@ public class LoginUserDto {
     private String firstName;
     private String lastName;
     private String password;
+    private String role;
     private BigDecimal value;
 
-    public LoginUserDto(Long id, String email, String firstName, String lastName, BigDecimal value) {
+    public LoginUserDto(Long id, String email, String firstName, String lastName, BigDecimal value, String role) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.value = value;
+        this.role = role;
     }
 
     public LoginUserDto(String email, String password) {

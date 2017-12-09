@@ -32,14 +32,24 @@ public class AddPersonServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Integer year = Integer.valueOf(req.getParameter("year"));
-        Integer month = Integer.valueOf(req.getParameter("month"));
-        Integer day = Integer.valueOf(req.getParameter("day"));
+
         Long countryId = Long.valueOf(req.getParameter("countryId"));
         String firstName = req.getParameter("firstName");
         String lastName = req.getParameter("lastName");
-        PersonBasicDto personBasicDto = new PersonBasicDto(firstName, lastName,
-                LocalDate.of(year, month, day), new CountryDto(countryId));
-        PersonService.getInstance().add(personBasicDto);
+        if (!firstName.equals("") && !lastName.equals("")) {
+            PersonBasicDto personBasicDto = new PersonBasicDto(firstName, lastName,
+                    dateOfBirth(req), new CountryDto(countryId));
+            PersonService.getInstance().add(personBasicDto);
+            resp.sendRedirect("upcoming");
+        } else {
+            resp.sendRedirect("add-person");
+        }
+    }
+
+    private LocalDate dateOfBirth(HttpServletRequest req) {
+        Integer year = Integer.valueOf(req.getParameter("year"));
+        Integer month = Integer.valueOf(req.getParameter("month"));
+        Integer day = Integer.valueOf(req.getParameter("day"));
+        return LocalDate.of(year, month, day);
     }
 }

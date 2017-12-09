@@ -1,6 +1,8 @@
 package by.ticketstore.dao;
 
 import by.ticketstore.dao.connection.ConnectionManager;
+import by.ticketstore.entities.Movie;
+import by.ticketstore.entities.Review;
 import by.ticketstore.entities.User;
 
 import java.math.BigDecimal;
@@ -17,20 +19,82 @@ public class UserDao {
     private UserDao() {
     }
 
-
-    public void add(User user) {
+    public Optional<User> getUserInfo(Long id) {
+        User user = null;
         try (Connection connection = ConnectionManager.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT * FROM users u JOIN reviews r ON u.id = r.user_id " +
+                            "JOIN films f ON r.film_id = f.id " +
+                            "WHERE u.id = ?")) {
+                preparedStatement.setLong(1, id);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        user = new User(resultSet.getLong("u.id"), resultSet.getString("u.first_name"),
+                                resultSet.getString("u.last_name") );
+                        addReview(user, resultSet);
+                    }
+                    while(resultSet.next()) {
+                        addReview(user, resultSet);
+                    }
+                    if (user != null) {
+                        return Optional.of(user);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    private boolean addReview(User user, ResultSet resultSet) throws SQLException {
+        return user.getReviews().add(new Review(resultSet.getString("r.text"),
+                new Movie(resultSet.getLong("f.id"), resultSet.getString("f.title"))));
+    }
+
+    public void add(User user) {
+        Connection connection = null;
+        try {
+            connection = ConnectionManager.getConnection();
+            connection.setAutoCommit(false);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO users (email, first_name, last_name, user_password)" +
-                            "VALUES (?, ?, ?, ?)")) {
+                            "VALUES (?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setString(1, user.getEmail());
                 preparedStatement.setString(2, user.getFirstName());
                 preparedStatement.setString(3, user.getLastName());
                 preparedStatement.setString(4, user.getPassword());
                 preparedStatement.executeUpdate();
+                try (ResultSet preparedResultSet = preparedStatement.getGeneratedKeys()) {
+                    if (preparedResultSet.next()) {
+                        user.setId(preparedResultSet.getLong(1));
+                    }
+                }
             }
+            try (PreparedStatement preparedStatement = connection.prepareStatement(
+                    "INSERT INTO users_roles (user_id)" +
+                            "VALUES (?)")) {
+                preparedStatement.setLong(1, user.getId());
+                preparedStatement.executeUpdate();
+            }
+            connection.commit();
         } catch (SQLException e) {
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+            }
             e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -73,19 +137,14 @@ public class UserDao {
     public Optional<User> login(User user) {
         try (Connection connection = ConnectionManager.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT * FROM users " +
+                    "SELECT * FROM users u JOIN users_roles ur ON u.id = ur.user_id " +
+                            "JOIN roles r ON ur.role_id = r.id " +
                             "WHERE email = ? AND user_password = ?")) {
                 preparedStatement.setString(1, user.getEmail());
                 preparedStatement.setString(2, user.getPassword());
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
-                        String email = resultSet.getString("email");
-                        Long id = resultSet.getLong("id");
-                        String firstName = resultSet.getString("first_name");
-                        String lastName = resultSet.getString("last_name");
-                        BigDecimal userValue = resultSet.getBigDecimal("user_value");
-                        User loggedUser = new User(id, email, firstName, lastName, userValue);
-                        return Optional.of(loggedUser);
+                        return getUser(resultSet);
                     }
                 }
             }
@@ -93,6 +152,17 @@ public class UserDao {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    private Optional<User> getUser(ResultSet resultSet) throws SQLException {
+        String email = resultSet.getString("u.email");
+        Long id = resultSet.getLong("u.id");
+        String firstName = resultSet.getString("u.first_name");
+        String lastName = resultSet.getString("u.last_name");
+        BigDecimal userValue = resultSet.getBigDecimal("u.user_value");
+        User loggedUser = new User(id, email, firstName, lastName, userValue);
+        loggedUser.setRole(resultSet.getString("r.name"));
+        return Optional.of(loggedUser);
     }
 
 
@@ -124,12 +194,12 @@ public class UserDao {
         return INSTANCE;
     }
 
-    public BigDecimal getValue(Connection connection, Long id) throws SQLException {
+    private BigDecimal getValue(Connection connection, Long id) throws SQLException {
         String getUserValueSql = "SELECT user_value FROM users WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(getUserValueSql)) {
             preparedStatement.setLong(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
+                if (resultSet.next()) {
                     return resultSet.getBigDecimal("user_value");
                 }
             }

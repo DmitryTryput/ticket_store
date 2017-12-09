@@ -81,10 +81,10 @@ public class PersonDao {
         try (Connection connection = ConnectionManager.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT * FROM persons p JOIN countries c ON p.country_id = c.id " +
-                            "JOIN films_directors fd ON p.id = fd.person_id " +
-                            "JOIN films f ON fd.film_id = f.id " +
-                            "JOIN films_actors fa ON p.id = fa.person_id " +
-                            "JOIN films fl ON fa.film_id = fl.id " +
+                            "LEFT JOIN films_directors fd ON p.id = fd.person_id " +
+                            "LEFT JOIN films f ON fd.film_id = f.id " +
+                            "LEFT JOIN films_actors fa ON p.id = fa.person_id " +
+                            "LEFT JOIN films fl ON fa.film_id = fl.id " +
                             "WHERE p.id = ?")) {
                 preparedStatement.setLong(1, id);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

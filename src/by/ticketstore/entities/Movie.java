@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import java.sql.Date;
 import java.time.Year;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
@@ -20,7 +21,7 @@ public class Movie {
     private Set<Genre> genres = new HashSet<>();
     private @NonNull Person director;
     private Set<Person> actors = new HashSet<>();
-    private Set<Review> reviews = new HashSet<>();
+    private Set<Review> reviews = new LinkedHashSet<>();
 
     public Movie(Long id, String title) {
         this.id = id;

@@ -15,6 +15,7 @@ public class User {
     private String lastName;
     private String password;
     private BigDecimal value;
+    private String role;
     private Set<Ticket> tickets = new HashSet<>();
     private Set<Review> reviews = new HashSet<>();
 
@@ -40,5 +41,20 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.value = value;
+    }
+
+    public User(Long id, BigDecimal value) {
+        this.id = id;
+        this.value = value;
+    }
+
+    public User(Long id) {
+        this.id = id;
+    }
+
+    public User(Long id, String firstName, String lastName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 }

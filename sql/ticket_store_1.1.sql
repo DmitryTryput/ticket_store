@@ -2,7 +2,13 @@ CREATE DATABASE ticket_store;
 
 USE ticket_store;
 
+CREATE TABLE users_roles (user_id INT, role_id INT DEFAULT 1, PRIMARY KEY(user_id, role_id),
+						FOREIGN KEY (user_id) REFERENCES users(id), 
+                        FOREIGN KEY (role_id) REFERENCES roles(id));
+                        
 
+                        
+ CREATE TABLE roles (id   INT AUTO_INCREMENT, name VARCHAR(40) UNIQUE NOT NULL, PRIMARY KEY(id));                    
 
 CREATE TABLE countries (id INT AUTO_INCREMENT, country_name VARCHAR(40) UNIQUE NOT NULL, PRIMARY KEY(id));
 
@@ -60,4 +66,3 @@ CREATE TABLE tickets (id INT AUTO_INCREMENT, seance_id INT NOT NULL, row INT, se
 						FOREIGN KEY (seance_id) REFERENCES seances(id), 
                         FOREIGN KEY (user_id) REFERENCES users(id));
       
-

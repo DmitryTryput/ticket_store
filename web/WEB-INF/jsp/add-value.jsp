@@ -12,5 +12,6 @@
 <input type="number" required step="any" min="0" name="value"><br>
     <button type="submit">Добавить</button>
 </form>
+${result}
 </body>
 </html>

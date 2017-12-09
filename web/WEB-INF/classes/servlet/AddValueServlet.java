@@ -23,9 +23,18 @@ public class AddValueServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        BigDecimal value = new BigDecimal(req.getParameter("value"));
-        Long userId = (Long) req.getSession().getAttribute("id");
-        BigDecimal newValue = UserService.getInstance().addValue(userId, value);
-        req.getSession().setAttribute("value", newValue);
+        String stringValue = req.getParameter("value");
+        if (!stringValue.equals("")) {
+            BigDecimal value = new BigDecimal(stringValue);
+            Long userId = (Long) req.getSession().getAttribute("id");
+            BigDecimal newValue = UserService.getInstance().addValue(userId, value);
+            req.getSession().setAttribute("value", newValue);
+            resp.sendRedirect("upcoming");
+        } else {
+            req.setAttribute("result", "Сумма не указана");
+            getServletContext()
+                    .getRequestDispatcher(createViewPath("add-value"))
+                    .forward(req, resp);
+        }
     }
 }

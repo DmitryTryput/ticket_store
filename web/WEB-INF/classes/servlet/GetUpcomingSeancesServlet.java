@@ -18,15 +18,10 @@ public class GetUpcomingSeancesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        //TODO: Service;
         req.setAttribute("seances",SeanceDao.getInstance().getUpcomingAll());
         getServletContext()
                 .getRequestDispatcher(createViewPath("upcoming"))
                 .forward(req, resp);
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
-    }
 }

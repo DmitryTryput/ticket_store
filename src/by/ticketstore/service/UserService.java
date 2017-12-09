@@ -1,9 +1,7 @@
 package by.ticketstore.service;
 
 import by.ticketstore.dao.UserDao;
-import by.ticketstore.dto.CheckUserEmailDto;
-import by.ticketstore.dto.LoginUserDto;
-import by.ticketstore.dto.RegisterUserDto;
+import by.ticketstore.dto.*;
 import by.ticketstore.entities.User;
 
 import java.math.BigDecimal;
@@ -21,6 +19,21 @@ public class UserService {
                 registerUserDto.getLastName(), registerUserDto.getPassword()));
     }
 
+    public UserInfoDto userProfile(Long id) {
+        Optional<User> userOptional = UserDao.getInstance().getUserInfo(id);
+        if (!userOptional.isPresent()) {
+            throw new IllegalArgumentException("Пользователь не найден");
+        }
+        User user = userOptional.get();
+        UserInfoDto userInfoDto = new UserInfoDto(user.getId(), user.getFirstName(), user.getLastName());
+        user.getReviews().stream()
+                .forEach(review -> userInfoDto.getReviews()
+                        .add(new ReviewDto(review.getText(),
+                                new MovieBaseInfoDto(review.getMovie()
+                                        .getId(), review.getMovie().getTitle()))));
+        return userInfoDto;
+    }
+
     public LoginUserDto loginUser(LoginUserDto loginUserDto) {
         Optional<User> userOptional = UserDao.getInstance()
                 .login(new User(loginUserDto.getEmail(), loginUserDto.getPassword()));
@@ -29,7 +42,7 @@ public class UserService {
         }
         User user = userOptional.get();
         return new LoginUserDto(user.getId(), user.getEmail(), user.getFirstName(),
-                user.getLastName(), user.getValue());
+                user.getLastName(), user.getValue(), user.getRole());
     }
 
     public BigDecimal addValue(Long id, BigDecimal value) {

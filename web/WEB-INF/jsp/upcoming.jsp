@@ -8,15 +8,24 @@
 <%@include file="header.jsp"%><br>
 
 
-<c:forEach var="cinema" items="${requestScope.seances}">
-<p>Кинотеатр: ${cinema.id} ${cinema.title}</p>
-    <c:forEach var="cinemahall" items="${cinema.halls}">
-<p>    Кинозал: ${cinemahall.id} ${cinemahall.title} </p>
+<ul><c:forEach var="cinema" items="${requestScope.seances}">
+
+    <li>
+        <p>Кинотеатр: ${cinema.id} ${cinema.title}</p>
+
+            <c:forEach var="cinemahall" items="${cinema.halls}">
+                <ul>
+    <p>    Кинозал: ${cinemahall.id} ${cinemahall.title} </p>
+    <li>
         <c:forEach var="seance" items="${cinemahall.seances}">
-<p>          Сеанс: ${seance.id} ${seance.movie.title} ${seance.seanceDate} ${seance.seanceTime} ${seance.price} </p>
-        </c:forEach>
+            <p><a href="${pageContext.request.contextPath}/movie?id=${seance.movie.id}"> ${seance.movie.title}</a> <p>Дата: <a href="${pageContext.request.contextPath}/buy-tickets?id=${seance.id}">${seance.seanceDate} ${seance.seanceTime}</a> Цена: ${seance.price} </p>
+    </li>
+            </c:forEach>
+        </ul>
     </c:forEach>
+    </li>
 </c:forEach>
+    </ul>
 </body>
 </html>
 

@@ -19,13 +19,9 @@ public class MovieFullInfoServlet extends HttpServlet {
         Long id = Long.valueOf(req.getParameter("id"));
 //TODO: Service;
         req.setAttribute("movie", MovieDao.getInstance().getFullInfo(id));
+        req.setAttribute("id", id);
         getServletContext()
                 .getRequestDispatcher(createViewPath("movie"))
                 .forward(req, resp);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
     }
 }

@@ -7,8 +7,9 @@ import lombok.RequiredArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Data
 @RequiredArgsConstructor
@@ -20,7 +21,8 @@ public class Seance {
     private @NonNull LocalDate seanceDate;
     private @NonNull LocalTime seanceTime;
     private @NonNull BigDecimal price;
-    private Set<Ticket> tickets = new HashSet<>();
+    private Map<Integer, Map<Integer, Ticket>> rowSeatTickets = new HashMap<>();
+
 
     public Seance(Long id, Movie movie, LocalDate seanceDate, LocalTime seanceTime, BigDecimal price) {
         this.id = id;

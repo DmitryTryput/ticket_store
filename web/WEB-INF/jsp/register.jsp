@@ -16,9 +16,11 @@
     <input type="text" required name="firstName"><br>
     <p>Фамилия:</p>
     <input type="text" required name="lastName"><br>
-    <button type="submit">save</button>
+    <p> <button type="submit">Зарегистрироваться</button></p>
 </form>
-
+<form action="${pageContext.request.contextPath}/login">
+<button type="submit">Назад</button>
+</form>
 <p> ${requestScope.result}</p><br>
 
 </body>
