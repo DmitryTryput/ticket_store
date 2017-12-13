@@ -7,6 +7,8 @@
 <body>
 <%@include file="header.jsp"%><br>
 
+Основная информация:
+
 <p>Название: ${requestScope.movie.title}</p>
 <p>Год выпуска: ${requestScope.movie.createDate}</p>
 <p>Страна: ${requestScope.movie.country.name}</p>
@@ -20,11 +22,12 @@
     <p> <a href="${pageContext.request.contextPath}/person?id=${actor.id}">    ${actor.firstName} ${actor.lastName}</a></p>
 </c:forEach>
 Комментарии:
+<c:if test="${sessionScope.movie.reviews eq true}">
 <c:forEach var="review" items="${requestScope.movie.reviews}">
     <p> Пользователь:  <a href="${pageContext.request.contextPath}/user-profile?id=${review.user.id}">  ${review.user.firstName} ${review.user.lastName}</a></p>
     <p>    Отзыв: ${review.text} </p>
 </c:forEach>
-
+</c:if>
 <form action="${pageContext.request.contextPath}/add-review?id=${requestScope.id}" method="post">
     <input type="text" maxlength="250" name="review">
     <button type="submit">Добавить комментарий</button>

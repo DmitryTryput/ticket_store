@@ -32,7 +32,7 @@
         </c:if>
 </c:forEach><br>
 </c:forEach>
-    <button type="submit">Добавить</button>
+    <button type="submit">Купить билеты</button>
 </form>
 ${result}
 </body>
